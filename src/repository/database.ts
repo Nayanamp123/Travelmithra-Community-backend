@@ -196,6 +196,7 @@ export async function initializeDatabase(): Promise<void> {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
   await queryDatabase(`
       CREATE TABLE IF NOT EXISTS bookings (
         id VARCHAR(50) PRIMARY KEY,
@@ -214,6 +215,44 @@ export async function initializeDatabase(): Promise<void> {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer VARCHAR(255) NOT NULL DEFAULT ''
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS route VARCHAR(255) NOT NULL DEFAULT ''
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS date DATE NOT NULL DEFAULT CURRENT_DATE
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS amount NUMERIC NOT NULL DEFAULT 0
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS received NUMERIC NOT NULL DEFAULT 0
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS previous NUMERIC NOT NULL DEFAULT 0
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS adults INT NOT NULL DEFAULT 1
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS kids INT NOT NULL DEFAULT 0
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS executive VARCHAR(100) NOT NULL DEFAULT ''
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_mode VARCHAR(50) NOT NULL DEFAULT 'BANK TRANSFER'
+    `);
+  await queryDatabase(`
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS remarks TEXT DEFAULT ''
+    `);
+
   await queryDatabase(`
       CREATE TABLE IF NOT EXISTS rewards (
         id SERIAL PRIMARY KEY,

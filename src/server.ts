@@ -16,22 +16,7 @@ const port = Number(process.env.PORT || 4000);
 app.use(express.json());
 corsMiddleware(app);
 
-const features = [
-  { id: 1, name: 'Destination Gallery', description: 'Browse curated collections of international destinations' },
-  { id: 2, name: 'Trip Planning', description: 'Create and manage your travel itineraries' },
-  { id: 3, name: 'Budget Tracker', description: 'Keep track of your travel expenses' },
-  { id: 4, name: 'Recommendations', description: 'Get personalized travel recommendations' },
-  { id: 5, name: 'Community Reviews', description: 'Read and write travel reviews' },
-  { id: 6, name: 'Travel Forums', description: 'Ask questions in active travel forums' },
-];
 
-const support = {
-  email: 'support@travelmithra.com',
-  phone: '+1-800-TRAVEL-1',
-  hours: 'Monday - Friday, 9AM - 6PM UTC',
-  faqCount: 45,
-  ticketResolutionTime: '24 hours',
-};
 
 app.get('/', (req, res) => {
   res.json({ message: 'Travelmithra backend running' });
@@ -99,6 +84,15 @@ app.post('/api/admin/rewards', async (req, res) => {
   if (!agent || !traveler || Number(amount) <= 0) return res.status(400).json({ error: 'Agent, traveler, and a positive reward amount are required' });
   const result = await queryDatabase('INSERT INTO rewards (agent, traveler, booking_id, amount, note) VALUES ($1,$2,$3,$4,$5) RETURNING id, agent, traveler, booking_id AS "bookingId", amount, note, status, created_at AS "createdAt"', [agent, traveler, bookingId || null, Number(amount), note || '']);
   res.status(201).json(result.rows[0]);
+});
+
+app.patch('/api/admin/rewards/:id', async (req, res) => {
+  if (!isAdminRequest(req)) return res.status(401).json({ error: 'Admin credentials required' });
+  const status = req.body.status === 'archived' ? 'archived' : null;
+  if (!status) return res.status(400).json({ error: 'Invalid reward status' });
+  const result = await queryDatabase('UPDATE rewards SET status = $1 WHERE id = $2 RETURNING id, status', [status, req.params.id]);
+  if (!result.rowCount) return res.status(404).json({ error: 'Reward not found' });
+  res.json(result.rows[0]);
 });
 
 app.get('/api/community', async (req, res) => {
