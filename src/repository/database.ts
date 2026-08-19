@@ -38,6 +38,8 @@ validateDatabaseUrl(databaseUrl);
 const pool = new Pool({
   connectionString: databaseUrl,
   ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  // Do not block API startup indefinitely when local PostgreSQL is offline.
+  connectionTimeoutMillis: 3000,
 });
 
 export async function queryDatabase<T extends Record<string, unknown> = Record<string, unknown>>(
