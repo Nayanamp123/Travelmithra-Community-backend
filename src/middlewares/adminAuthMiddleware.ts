@@ -4,7 +4,7 @@ export function adminAuthMiddleware(req: Request, res: Response, next: NextFunct
   const username = req.headers['x-admin-username'];
   const password = req.headers['x-admin-password'];
   const configuredUsername = process.env.ADMIN_USERNAME?.trim() || 'admin';
-  const configuredPassword = process.env.ADMIN_PASSWORD?.trim() || 'admin123';
+  const configuredPassword = process.env.ADMIN_PASSWORD?.trim() || 'admin';
 
   if (
     typeof username === 'string' &&

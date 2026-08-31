@@ -7,7 +7,7 @@ import {
 
 export async function authenticateAdmin(username: string, password: string): Promise<{ message: string; username: string }> {
   const configuredUsername = process.env.ADMIN_USERNAME?.trim() || 'admin';
-  const configuredPassword = process.env.ADMIN_PASSWORD?.trim() || 'admin123';
+  const configuredPassword = process.env.ADMIN_PASSWORD?.trim() || 'admin';
   const submittedUsername = username?.trim();
   const submittedPassword = password?.trim();
 

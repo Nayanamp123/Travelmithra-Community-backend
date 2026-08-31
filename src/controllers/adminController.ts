@@ -28,7 +28,7 @@ export function isAdminRequest(req: Request): boolean {
     process.env.ADMIN_USERNAME?.trim() || 'admin';
 
   const adminPassword =
-    process.env.ADMIN_PASSWORD?.trim() || 'admin123';
+    process.env.ADMIN_PASSWORD?.trim() || 'admin';
 
   return (
     username === adminUsername &&
