@@ -1,6 +1,31 @@
 import type { Request, Response, NextFunction } from 'express';
 import { authenticateAdmin, getAllUsers, changeUserRole, removeUser } from '../services/adminService';
 import { queryDatabase } from '../repository/database';
+import { sendOtpEmail } from '../services/emailService';
+import crypto from 'crypto';
+
+export const pendingOtps = new Map<string, { hash: string; expiresAt: number }>();
+
+export async function sendOtp(req: Request, res: Response, next: NextFunction) {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ error: 'Valid email is required' });
+    const otp = String(crypto.randomInt(100000, 1000000));
+    pendingOtps.set(email, { hash: crypto.createHash('sha256').update(otp).digest('hex'), expiresAt: Date.now() + 10 * 60 * 1000 });
+    await sendOtpEmail(email, otp);
+    res.json({ message: 'OTP sent to the email address' });
+  } catch (error) { next(error); }
+}
+
+export async function verifyOtp(req: Request, res: Response) {
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const otp = String(req.body.otp || '').trim();
+  const saved = pendingOtps.get(email);
+  const valid = Boolean(saved && saved.expiresAt > Date.now() && saved.hash === crypto.createHash('sha256').update(otp).digest('hex'));
+  if (!valid) return res.status(400).json({ error: 'Invalid or expired OTP' });
+  pendingOtps.delete(email);
+  res.json({ message: 'OTP verified' });
+}
 
 export async function loginAdmin(req: Request, res: Response, next: NextFunction) {
   try {

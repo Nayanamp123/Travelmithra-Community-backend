@@ -11,6 +11,8 @@ import {
   getRewards,
   createReward,
   updateRewardStatus,
+  sendOtp,
+  verifyOtp,
 } from '../controllers/adminController';
 
 const router = express.Router();
@@ -30,6 +32,8 @@ function requireAdmin(
 
 router.post('/login', asyncHandler(loginAdmin));
 router.use(adminAuthMiddleware);
+router.post('/send-otp', asyncHandler(sendOtp));
+router.post('/verify-otp', asyncHandler(verifyOtp));
 router.get('/users', asyncHandler(getUsers));
 router.patch('/users/:userId/role', asyncHandler(updateUserRole));
 router.delete('/users/:userId', asyncHandler(deleteUser));

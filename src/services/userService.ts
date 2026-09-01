@@ -3,6 +3,7 @@ import type { User } from '../types';
 import {
   findUserByEmail,
   findUserByCredentials,
+  findAdminCustomerByCredentials,
   findUserByReferralCode,
   insertUser,
   findUserById,
@@ -91,8 +92,9 @@ export async function registerUser(
   });
 }
 
-export async function loginUser(email: string, password: string): Promise<User> {
-  const user = await findUserByCredentials(email, hashPassword(password));
+export async function loginUser(identifier: string, password: string): Promise<User> {
+  const user = await findUserByCredentials(identifier, hashPassword(password))
+    || await findAdminCustomerByCredentials(identifier, password);
   if (!user) {
     const error = new Error('Invalid email or password') as Error & { status?: number };
     error.status = 401;

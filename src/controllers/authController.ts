@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { registerUser, loginUser } from '../services/userService';
+import { findApprovedBookingsForCustomer } from '../repository/userRepository';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -20,13 +21,17 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+    const { email, username, password } = req.body;
+    const identifier = String(username || email || '').trim();
+    if (!identifier || !password) {
+      return res.status(400).json({ error: 'Email or customer name and password are required' });
     }
 
-    const user = await loginUser(email, password);
-    res.json({ message: 'Login successful', user });
+    const user = await loginUser(identifier, password);
+    const bookings = user.role === 'customer'
+      ? await findApprovedBookingsForCustomer(user.name)
+      : [];
+    res.json({ message: 'Login successful', user, bookings });
   } catch (error) {
     next(error);
   }

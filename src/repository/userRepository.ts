@@ -117,3 +117,46 @@ export async function referralCodeExists(code: string): Promise<boolean> {
   const result = await queryDatabase<{ id: number }>('SELECT id FROM users WHERE referral_code = $1', [code]);
   return result.rows.length > 0;
 }
+
+export async function findAdminCustomerByCredentials(name: string, password: string): Promise<User | null> {
+  const result = await queryDatabase<{
+    id: number;
+    name: string;
+    email: string;
+    password: string | null;
+    active: boolean;
+  }>(
+    `SELECT id, name, email, password, active
+     FROM admin_customers
+     WHERE LOWER(TRIM(name)) = LOWER(TRIM($1))
+       AND password = $2
+       AND active = TRUE
+     LIMIT 1`,
+    [name, password]
+  );
+
+  const customer = result.rows[0];
+  if (!customer) return null;
+
+  return {
+    id: customer.id,
+    name: customer.name,
+    email: customer.email,
+    avatar: null,
+    referralCode: '',
+    referredBy: null,
+    role: 'customer',
+  };
+}
+
+export async function findApprovedBookingsForCustomer(name: string) {
+  const result = await queryDatabase(
+    `SELECT id, customer, route, date, amount, received, previous, adults, kids,
+            executive, active, payment_mode AS "paymentMode", remarks
+     FROM bookings
+     WHERE LOWER(TRIM(customer)) = LOWER(TRIM($1)) AND active = TRUE
+     ORDER BY date DESC`,
+    [name]
+  );
+  return result.rows;
+}
