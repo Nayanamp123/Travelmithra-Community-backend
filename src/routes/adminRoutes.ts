@@ -8,6 +8,7 @@ import {
   getBookings,
   createBooking,
   deleteBooking,
+  updateBookingStatus,
   getRewards,
   createReward,
   updateRewardStatus,
@@ -47,6 +48,7 @@ router.post('/customers',requireAdmin,createCustomer);
 //BOOKINGS
 router.get('/bookings',requireAdmin,getBookings);
 router.post('/bookings',requireAdmin,createBooking);
+router.patch('/bookings/:bookingId/status',requireAdmin,updateBookingStatus);
 router.delete('/bookings/:bookingId',requireAdmin,deleteBooking);
 
 // REWARDS

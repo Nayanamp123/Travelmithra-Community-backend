@@ -251,7 +251,10 @@ export async function createBooking(
       });
     }
 
-    const id = b.id || `TM-${Date.now()}`;
+    // Never derive a new booking id from the number of rows in the UI. That
+    // value changes after deletes/reloads and can make a new booking overwrite
+    // an older one through ON CONFLICT.
+    const id = b.id || `TM-${Date.now()}-${crypto.randomInt(1000, 10000)}`;
 
     const result = await queryDatabase(
       `
@@ -525,5 +528,23 @@ export async function updateRewardStatus(
     return res.status(500).json({
       error: 'Failed to update reward',
     });
+  }
+}
+
+export async function updateBookingStatus(req: Request, res: Response) {
+  try {
+    const active = Boolean(req.body.active);
+    const result = await queryDatabase(
+      `UPDATE bookings SET active = $1 WHERE id = $2
+       RETURNING id, customer, route, date, amount, received, previous, adults,
+                 kids, executive, active, payment_mode AS "paymentMode", remarks,
+                 created_at AS "createdAt"`,
+      [active, req.params.bookingId]
+    );
+    if (!result.rowCount) return res.status(404).json({ error: 'Booking not found' });
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Update booking status error:', error);
+    return res.status(500).json({ error: 'Failed to update booking status' });
   }
 }
