@@ -1,10 +1,17 @@
 import cors from 'cors';
 import type { Express } from 'express';
 
-const corsOrigins = (process.env.CORS_ORIGINS || '')
+const defaultCorsOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4000',
+  'http://localhost:4002',
+  'https://travelmithra-community-frontend-39psl1crb.vercel.app',
+];
+
+const corsOrigins = [...defaultCorsOrigins, ...(process.env.CORS_ORIGINS || '')
   .split(',')
   .map((origin) => origin.trim())
-  .filter(Boolean);
+  .filter(Boolean)];
 
 export const corsOptions = {
   origin(
