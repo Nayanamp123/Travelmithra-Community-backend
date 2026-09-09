@@ -3,9 +3,11 @@ import type { Express } from 'express';
 
 const defaultCorsOrigins = [
   'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'http://localhost:4000',
   'http://localhost:4002',
   'https://travelmithra-community-frontend-39psl1crb.vercel.app',
+  'https://dev.travelmithra.com',
 ];
 
 const corsOrigins = [...defaultCorsOrigins, ...(process.env.CORS_ORIGINS || '')
@@ -25,7 +27,9 @@ export const corsOptions = {
       return;
     }
 
-    if (corsOrigins.includes(origin)) {
+    const isLocalDevelopmentOrigin = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+
+    if (corsOrigins.includes(origin) || isLocalDevelopmentOrigin) {
       callback(null, true);
       return;
     }
@@ -40,6 +44,8 @@ export const corsOptions = {
     'Authorization',
     'x-admin-username',
     'x-admin-password',
+    'Cache-Control',
+    'Pragma',
   ],
 
   credentials: true,
