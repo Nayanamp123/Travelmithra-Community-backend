@@ -531,6 +531,17 @@ export async function updateRewardStatus(
   }
 }
 
+export async function deleteReward(req: Request, res: Response) {
+  try {
+    const result = await queryDatabase('DELETE FROM rewards WHERE id = $1 RETURNING id', [req.params.rewardId]);
+    if (!result.rowCount) return res.status(404).json({ error: 'Reward not found' });
+    return res.json({ message: 'Reward deleted', id: result.rows[0].id });
+  } catch (error) {
+    console.error('Delete reward error:', error);
+    return res.status(500).json({ error: 'Failed to delete reward' });
+  }
+}
+
 export async function updateBookingStatus(req: Request, res: Response) {
   try {
     const active = Boolean(req.body.active);

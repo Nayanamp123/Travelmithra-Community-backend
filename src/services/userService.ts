@@ -30,6 +30,10 @@ async function generateUniqueReferralCode(): Promise<string> {
   return code;
 }
 
+function generateConsultantId(): string {
+  return `CONS-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+}
+
 function normalizeReferralCode(referralCode?: string | null): string | null {
   const value = referralCode?.trim();
   if (!value) {
@@ -56,15 +60,19 @@ function normalizeReferralCode(referralCode?: string | null): string | null {
 
 export async function registerUser(
   name: string,
-  email: string,
+  username: string,
+  phone: string,
   password: string,
+  avatar?: string | null,
   referralCode?: string | null,
-  role = 'traveler',
-  salesExecutive?: string | null
+  termsAccepted = false,
+  role = 'agent',
+  salesExecutive?: string | null,
+  consultantId?: string
 ): Promise<User> {
-  const existing = await findUserByEmail(email);
+  const existing = await findUserByEmail(username);
   if (existing) {
-    const error = new Error('Email already exists') as Error & { status?: number };
+    const error = new Error('Username already exists') as Error & { status?: number };
     error.status = 400;
     throw error;
   }
@@ -83,7 +91,12 @@ export async function registerUser(
 
   return insertUser({
     name,
-    email,
+    email: username,
+    username,
+    phone,
+    avatar,
+    termsAccepted,
+    consultantId: consultantId || generateConsultantId(),
     passwordHash,
     referralCode: newReferralCode,
     referredBy,

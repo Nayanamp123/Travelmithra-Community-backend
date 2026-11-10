@@ -4,6 +4,7 @@ import authRoutes from './routes/authRoutes';
 import profileRoutes from './routes/profileRoutes';
 import userRoutes from './routes/userRoutes';
 import adminRoutes from './routes/adminRoutes';
+import agentRoutes from './routes/agentRoutes';
 import { corsMiddleware } from './middlewares/corsMiddleware';
 import { errorHandler } from './middlewares/errorHandler';
 import { queryDatabase, initializeDatabase } from './repository/database';
@@ -13,7 +14,9 @@ dotenv.config();
 const app = express();
 const port = Number(process.env.PORT || 4000);
 
-app.use(express.json());
+// Profile images are compressed in the browser, but allow enough room for the
+// resulting base64 payload during registration and profile updates.
+app.use(express.json({ limit: '2mb' }));
 corsMiddleware(app);
 // Booking/customer reads must never be served from a browser, proxy, or CDN cache.
 app.use((_req, res, next) => {
@@ -33,6 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/agent', agentRoutes);
 app.use('/admin', adminRoutes);
 
 

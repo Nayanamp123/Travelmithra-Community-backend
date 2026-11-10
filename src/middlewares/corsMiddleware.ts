@@ -44,6 +44,7 @@ export const corsOptions = {
     'Authorization',
     'x-admin-username',
     'x-admin-password',
+    'x-agent-username',
     'Cache-Control',
     'Pragma',
   ],

@@ -12,6 +12,7 @@ import {
   getRewards,
   createReward,
   updateRewardStatus,
+  deleteReward,
   sendOtp,
   verifyOtp,
 } from '../controllers/adminController';
@@ -55,4 +56,5 @@ router.delete('/bookings/:bookingId',requireAdmin,deleteBooking);
 router.get('/rewards',requireAdmin,getRewards);
 router.post('/rewards',requireAdmin,createReward);
 router.patch('/rewards/:rewardId/status',requireAdmin,updateRewardStatus)
+router.delete('/rewards/:rewardId', requireAdmin, asyncHandler(deleteReward));
 export default router;

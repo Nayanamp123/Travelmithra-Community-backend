@@ -103,6 +103,12 @@ export async function initializeDatabase(): Promise<void> {
   await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER');
   await queryDatabase("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'member'");
   await queryDatabase("ALTER TABLE users ADD COLUMN IF NOT EXISTS sales_executive VARCHAR(50)");
+  await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255)');
+  await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50)');
+  await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted BOOLEAN NOT NULL DEFAULT FALSE');
+  await queryDatabase("ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_version VARCHAR(50) NOT NULL DEFAULT 'agent-rules-v1'");
+  await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP');
+  await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS consultant_id VARCHAR(30)');
   await queryDatabase("UPDATE users SET role = 'member' WHERE role IS NULL");
   await ensureReferralCodes();
   await queryDatabase('ALTER TABLE users ALTER COLUMN referral_code SET NOT NULL');
