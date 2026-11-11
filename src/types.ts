@@ -7,6 +7,7 @@ export type User = {
   referralCode: string;
   referredBy?: number | null;
   role: string;
+  salesExecutive?: string | null;
   consultantId?: string;
   createdAt?: string;
   updatedAt?: string;

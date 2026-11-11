@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { listUsers, changeUserRole, removeUser } from '../services/userService';
+import { listUsers, changeUserRole, assignUserToTeamLead, removeUser } from '../services/userService';
 
 export async function getAllUsers(req: Request, res: Response, next: NextFunction) {
   try {
@@ -29,6 +29,17 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     const userId = Number(req.params.userId);
     await removeUser(userId);
     res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateSalesExecutive(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = Number(req.params.userId);
+    const salesExecutive = typeof req.body.salesExecutive === 'string' ? req.body.salesExecutive.trim() : null;
+    const user = await assignUserToTeamLead(userId, salesExecutive);
+    res.json({ message: 'Team Lead assignment updated successfully', user });
   } catch (error) {
     next(error);
   }

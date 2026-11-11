@@ -8,6 +8,7 @@ import agentRoutes from './routes/agentRoutes';
 import { corsMiddleware } from './middlewares/corsMiddleware';
 import { errorHandler } from './middlewares/errorHandler';
 import { queryDatabase, initializeDatabase } from './repository/database';
+import teamLeadRoutes from './routes/teamLeadRoutes';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/team-lead', teamLeadRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/admin', adminRoutes);
 

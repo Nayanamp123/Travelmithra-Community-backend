@@ -10,6 +10,7 @@ import {
   findAllUsersWithReferrer,
   updateUserProfile,
   updateUserRole,
+  updateUserSalesExecutive,
   deleteUserById,
   referralCodeExists,
 } from '../repository/userRepository';
@@ -31,7 +32,7 @@ async function generateUniqueReferralCode(): Promise<string> {
 }
 
 function generateConsultantId(): string {
-  return `CONS-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+  return `TM-${crypto.randomInt(100000, 1000000)}`;
 }
 
 function normalizeReferralCode(referralCode?: string | null): string | null {
@@ -147,6 +148,16 @@ export async function listUsers(): Promise<User[]> {
 
 export async function changeUserRole(userId: number, role: string): Promise<User> {
   const updated = await updateUserRole(userId, role);
+  if (!updated) {
+    const error = new Error('User not found') as Error & { status?: number };
+    error.status = 404;
+    throw error;
+  }
+  return updated;
+}
+
+export async function assignUserToTeamLead(userId: number, salesExecutive: string | null): Promise<User> {
+  const updated = await updateUserSalesExecutive(userId, salesExecutive);
   if (!updated) {
     const error = new Error('User not found') as Error & { status?: number };
     error.status = 404;

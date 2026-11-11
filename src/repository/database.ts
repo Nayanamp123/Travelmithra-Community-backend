@@ -126,6 +126,11 @@ export async function initializeDatabase(): Promise<void> {
   await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP');
   await queryDatabase('ALTER TABLE users ADD COLUMN IF NOT EXISTS consultant_id VARCHAR(30)');
   await queryDatabase("UPDATE users SET role = 'member' WHERE role IS NULL");
+  await queryDatabase(`
+    UPDATE users
+    SET role = 'team_lead'
+    WHERE UPPER(TRIM(name)) IN ('SANJU', 'UMA MAHESHWARI')
+  `);
   await ensureReferralCodes();
   await queryDatabase('ALTER TABLE users ALTER COLUMN referral_code SET NOT NULL');
   await queryDatabase('CREATE UNIQUE INDEX IF NOT EXISTS users_referral_code_unique ON users(referral_code)');

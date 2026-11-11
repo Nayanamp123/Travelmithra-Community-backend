@@ -41,6 +41,7 @@ function mapUserRow(row: UserRow): User {
     referralCode: row.referral_code,
     referredBy: row.referred_by ?? null,
     role: row.role,
+    salesExecutive: row.sales_executive ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     referredByName: row.referred_by_name ?? null,
@@ -51,6 +52,14 @@ export async function findUserByEmail(email: string): Promise<User | null> {
   const result = await queryDatabase<UserRow>(
     'SELECT id, name, email, avatar, referral_code, referred_by, role FROM users WHERE email = $1',
     [email]
+  );
+  return result.rows.length > 0 ? mapUserRow(result.rows[0]) : null;
+}
+
+export async function updateUserSalesExecutive(userId: number, salesExecutive: string | null): Promise<User | null> {
+  const result = await queryDatabase<UserRow>(
+    'UPDATE users SET sales_executive = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, name, email, avatar, referral_code, referred_by, role, sales_executive, created_at, updated_at',
+    [salesExecutive || null, userId]
   );
   return result.rows.length > 0 ? mapUserRow(result.rows[0]) : null;
 }
@@ -86,7 +95,7 @@ export async function findUserById(userId: number): Promise<User | null> {
 
 export async function findAllUsersWithReferrer(): Promise<User[]> {
   const result = await queryDatabase<UserRow>(
-    `SELECT u.id, u.name, u.email, u.avatar, u.phone, u.role, u.created_at, u.referral_code, u.referred_by, r.name AS referred_by_name
+    `SELECT u.id, u.name, u.email, u.avatar, u.phone, u.role, u.sales_executive, u.created_at, u.referral_code, u.referred_by, r.name AS referred_by_name
      FROM users u
      LEFT JOIN users r ON u.referred_by = r.id
      ORDER BY u.name ASC`
