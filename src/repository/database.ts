@@ -1,9 +1,11 @@
 import dotenv from 'dotenv';
 import crypto from 'crypto';
+import path from 'path';
 import pkg from 'pg';
 import type { QueryResult } from 'pg';
 
-dotenv.config();
+// Resolve the backend env file independently of the process working directory.
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const { Pool } = pkg;
 
@@ -32,7 +34,21 @@ function validateDatabaseUrl(databaseUrl: string | undefined): void {
   }
 }
 
-const databaseUrl = process.env.DATABASE_URL;
+function getDatabaseUrl(): string | undefined {
+  if (process.env.DATABASE_URL?.trim()) {
+    return process.env.DATABASE_URL.trim();
+  }
+
+  const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD } = process.env;
+  if (DB_HOST && DB_NAME && DB_USER && DB_PASSWORD) {
+    const port = DB_PORT || '5432';
+    return `postgresql://${encodeURIComponent(DB_USER)}:${encodeURIComponent(DB_PASSWORD)}@${DB_HOST}:${port}/${encodeURIComponent(DB_NAME)}`;
+  }
+
+  return undefined;
+}
+
+const databaseUrl = getDatabaseUrl();
 validateDatabaseUrl(databaseUrl);
 
 const pool = new Pool({
