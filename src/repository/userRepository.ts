@@ -66,7 +66,7 @@ export async function updateUserSalesExecutive(userId: number, salesExecutive: s
 
 export async function findUserByCredentials(email: string, passwordHash: string): Promise<User | null> {
   const result = await queryDatabase<UserRow>(
-    'SELECT id, name, email, avatar, referral_code, referred_by, role FROM users WHERE (email = $1 OR username = $1) AND password = $2',
+    'SELECT id, name, email, phone, avatar, referral_code, referred_by, role FROM users WHERE (email = $1 OR username = $1) AND password = $2',
     [email, passwordHash]
   );
   return result.rows.length > 0 ? mapUserRow(result.rows[0]) : null;
