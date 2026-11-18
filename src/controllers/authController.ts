@@ -24,6 +24,35 @@ export async function register(req: Request, res: Response, next: NextFunction) 
   }
 }
 
+export async function sendRegistrationOtp(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { name, username, phone, password, avatar, referralCode, termsAccepted, consultantId, salesExecutive } = req.body;
+    if (!name || !username || !phone || !password || !/^\S+@\S+\.\S+$/.test(String(username)) || termsAccepted !== true) return res.status(400).json({ error: 'Valid name, email, phone, password, and accepted terms are required' });
+    const existing = await queryDatabase('SELECT id FROM users WHERE email = $1 OR username = $1', [String(username).trim()]);
+    if (existing.rows.length) return res.status(400).json({ error: 'Email is already registered' });
+    const challengeId = crypto.randomUUID();
+    const otp = String(crypto.randomInt(100000, 1000000));
+    await queryDatabase('INSERT INTO agent_registration_otps (challenge_id, payload, otp_hash, expires_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP + INTERVAL \'10 minutes\')', [challengeId, { name, username, phone, password, avatar, referralCode, termsAccepted, consultantId, salesExecutive }, otpHash(otp)]);
+    await sendOtpEmail(String(username).trim(), otp);
+    res.json({ message: 'Registration OTP sent', challengeId, maskedEmail: `${String(username).slice(0, 2)}***${String(username).slice(String(username).indexOf('@'))}` });
+  } catch (error) { next(error); }
+}
+
+export async function verifyRegistrationOtp(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { challengeId, otp } = req.body;
+    const result = await queryDatabase<any>('SELECT * FROM agent_registration_otps WHERE challenge_id = $1', [challengeId]);
+    const row = result.rows[0];
+    if (!row || new Date(row.expires_at).getTime() < Date.now() || row.attempts >= 5) return res.status(401).json({ error: 'OTP expired or invalid' });
+    await queryDatabase('UPDATE agent_registration_otps SET attempts = attempts + 1 WHERE challenge_id = $1', [challengeId]);
+    if (!/^\d{6}$/.test(String(otp)) || row.otp_hash !== otpHash(String(otp))) return res.status(401).json({ error: 'Invalid OTP' });
+    const p = row.payload;
+    const user = await registerUser(p.name, p.username, p.phone, p.password, p.avatar, p.referralCode, true, 'agent', p.salesExecutive, p.consultantId);
+    await queryDatabase('DELETE FROM agent_registration_otps WHERE challenge_id = $1', [challengeId]);
+    res.status(201).json({ message: 'User registered successfully', user });
+  } catch (error) { next(error); }
+}
+
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, username, password } = req.body;
